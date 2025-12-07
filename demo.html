@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-DARS Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            border: 12px solid #333;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 50;
+            font-size: 12px;
+        }
+
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 28px;
+            background: #000;
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+            z-index: 50;
+        }
+
+        .content {
+            width: 100%;
+            height: 100%;
+            padding-top: 48px;
+            padding-bottom: 32px;
+            background: linear-gradient(180deg, #050510 0%, #0a0a2e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .home-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 128px;
+            height: 4px;
+            background: white;
+            border-radius: 9999px;
+            opacity: 0.5;
+            z-index: 50;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            filter: drop-shadow(0 0 15px #00f0ff);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 16px;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            line-height: 1.4;
+        }
+
+        p {
+            font-size: 14px;
+            color: #aaa;
+            letter-spacing: 1px;
+        }
+
+        .divider {
+            width: 100px;
+            height: 2px;
+            background: #00f0ff;
+            margin-top: 30px;
+            box-shadow: 0 0 10px #00f0ff;
+        }
+
+        .nav-buttons {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        button {
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        button:hover {
+            background: rgba(0, 240, 255, 0.3);
+        }
+
+        .scene {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .scene.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .alert-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 4px solid #ff003c;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 0, 60, 0.1);
+            margin: 20px 0;
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(255, 0, 60, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 50px rgba(255, 0, 60, 0.6);
+            }
+        }
+
+        .sos-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff003c, #ff4444);
+            border: none;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 20px #ff003c;
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 0, 60, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 20px rgba(255, 0, 60, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 0, 60, 0);
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+            max-width: 300px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="phone-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 📡 🔋</span>
+        </div>
+        <div class="notch"></div>
+
+        <div class="content">
+            <!-- Scene 1: Intro -->
+            <div class="scene active" id="scene1">
+                <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <path d="M12 8v4m0 4h.01" />
+                </svg>
+                <h1>SMART DISASTER<br />ALERT & RESCUE<br />SYSTEM</h1>
+                <p>Real-time Alerts • Safe Zones • SOS Rescue</p>
+                <div class="divider"></div>
+            </div>
+
+            <!-- Scene 2: Home Dashboard -->
+            <div class="scene" id="scene2">
+                <p style="margin-bottom: 20px;">📍 Kerala, India</p>
+                <div class="alert-circle">
+                    <div style="font-size: 48px; margin-bottom: 8px;">⚠️</div>
+                    <h2 style="color: #ff003c; font-size: 24px;">HIGH RISK</h2>
+                    <span style="font-size: 12px; color: #aaa;">FLOOD ALERT</span>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div style="color: #00f0ff;">💧</div>
+                        <div class="stat-value" style="color: #00f0ff;">8.5 ft</div>
+                        <div class="stat-label">Water Level</div>
+                    </div>
+                    <div class="stat-card">
+                        <div style="color: #ffcc00;">💨</div>
+                        <div class="stat-value" style="color: #ffcc00;">45 km/h</div>
+                        <div class="stat-label">Wind Speed</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 3: SOS -->
+            <div class="scene" id="scene3">
+                <h2 style="margin-bottom: 40px;">EMERGENCY SOS</h2>
+                <button class="sos-button" onclick="alert('SOS SENT! Rescue Team Notified')">SOS</button>
+                <p style="margin-top: 40px; font-size: 14px; color: #aaa;">Tap to alert nearby rescue teams</p>
+            </div>
+
+            <!-- Scene 4: Emergency Dashboard -->
+            <div class="scene" id="scene4">
+                <h2 style="margin-bottom: 20px;">SITUATION REPORT</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #ff003c;">12</div>
+                        <div class="stat-label">Active Incidents</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #00f0ff;">08</div>
+                        <div class="stat-label">Rescue Teams</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #00ff66;">05</div>
+                        <div class="stat-label">Open Shelters</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #ffcc00;">1.2k</div>
+                        <div class="stat-label">Affected People</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 5: Final -->
+            <div class="scene" id="scene5">
+                <div style="font-size: 60px; margin-bottom: 24px; filter: drop-shadow(0 0 15px #ff003c);">❤️</div>
+                <h1 style="font-size: 24px;">S-DARS</h1>
+                <p style="color: #00f0ff; font-size: 16px; margin-top: 8px;">Saving Lives with Technology</p>
+                <div
+                    style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #333; font-size: 12px; color: #aaa;">
+                    Prototype Demo<br />
+                    <span style="color: #fff; font-weight: bold;">Java + Spring Boot</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="home-indicator"></div>
+
+        <div class="nav-buttons">
+            <button onclick="prevScene()">← Prev</button>
+            <button onclick="nextScene()">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentScene = 1;
+        const totalScenes = 5;
+
+        function showScene(sceneNum) {
+            document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+            document.getElementById('scene' + sceneNum).classList.add('active');
+            currentScene = sceneNum;
+        }
+
+        function nextScene() {
+            if (currentScene < totalScenes) {
+                showScene(currentScene + 1);
+            }
+        }
+
+        function prevScene() {
+            if (currentScene > 1) {
+                showScene(currentScene - 1);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextScene();
+            if (e.key === 'ArrowLeft') prevScene();
+        });
+    </script>
+</body>
+
+</html>
